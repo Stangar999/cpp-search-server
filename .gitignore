@@ -1,11 +1,13 @@
 # Prerequisites
 *.d
+/build-search-server-Desktop_Qt_6_0_3_MinGW_64_bit-Debug
 
 # Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
+*.user
 
 # Precompiled Headers
 *.gch
