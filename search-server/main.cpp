@@ -436,7 +436,9 @@ void TestSortRelevancsDocument() {
        server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, ratings);
        server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, ratings);
        const auto found_docs = server.FindTopDocuments("cat in the city"s);
-       ASSERT(found_docs.size() == 3 && found_docs[0].relevance > found_docs[1].relevance > found_docs[2].relevance);
+       ASSERT(found_docs.size() == 3 &&
+              found_docs[0].relevance > found_docs[1].relevance &&
+              found_docs[1].relevance > found_docs[2].relevance);
    }
 }
 // Тест проверяет, среднее аримфмет рейтинга
@@ -542,7 +544,7 @@ void TestStatus() {
     }
 }
 // Тест проверяет, релевантность
-void TestRelevancs() {
+void TestRelevance() {
    const int doc_id1 = 41;
    const string content1 = "cat in the city"s;
    const int doc_id2 = 42;
@@ -575,7 +577,7 @@ void TestSearchServer() {
     RUN_TEST(TestAverRatingAddDoc);
     RUN_TEST(TestPredicate);
     RUN_TEST(TestStatus);
-    RUN_TEST(TestRelevancs);
+    RUN_TEST(TestRelevance);
 
     // Не забудьте вызывать остальные тесты здесь
 }
