@@ -421,7 +421,7 @@ void TestMatchDocument() {
         ASSERT(vec.empty());
     }
 }
-// Тест проверяет, что поисковая система исключает стоп-слова при добавлении документов
+// Тест проверяет что результат отсортирован по релевантности
 void TestSortRelevancsDocument() {
    const int doc_id1 = 41;
    const string content1 = "cat in cat the city"s;
@@ -430,33 +430,47 @@ void TestSortRelevancsDocument() {
    const int doc_id3 = 43;
    const string content3 = "cat out of country"s;
    const vector<int> ratings = {1, 2, 3};
-   // Сначала убеждаемся, что поиск слова, не входящего в список стоп-слов,
-   // находит нужный документ
    {
        SearchServer server;
        server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, ratings);
        server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, ratings);
        server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, ratings);
        const auto found_docs = server.FindTopDocuments("cat in the city"s);
-       ASSERT(found_docs.size() == 3 && found_docs[0].id == doc_id1 && found_docs[1].id == doc_id2);
+       ASSERT(found_docs.size() == 3 && found_docs[0].relevance > found_docs[1].relevance > found_docs[2].relevance);
    }
 }
 // Тест проверяет, среднее аримфмет рейтинга
 void TestAverRatingAddDoc() {
     const int doc_id = 42;
     const string content = "cat in the city"s;
-    const vector<int> ratings = {1, 2, 3};
+    const vector<int> ratings1 = {1, 2, 3};
+    const vector<int> ratings2 = {1, -2, 3};
+    const vector<int> ratings3 = {-1, -2, -3};
     // убеждаемся, что документ добавляется с среднее аримфмет рейтинга
     {
         SearchServer server;
-        server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
+        server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings1);
         const auto& found_docs = server.FindTopDocuments(content);
         ASSERT_EQUAL(found_docs.back().rating, 2 );
+    }
+    // убеждаемся, что документ добавляется с среднее аримфмет рейтинга
+    {
+        SearchServer server;
+        server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings2);
+        const auto& found_docs = server.FindTopDocuments(content);
+        ASSERT_EQUAL(found_docs.back().rating, static_cast<int>(0.667) );
+    }
+    // убеждаемся, что документ добавляется с среднее аримфмет рейтинга
+    {
+        SearchServer server;
+        server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings3);
+        const auto& found_docs = server.FindTopDocuments(content);
+        ASSERT_EQUAL(found_docs.back().rating, -2 );
     }
 }
 
 // Тест проверяет, предикат
-void TestPredicat() {
+void TestPredicate() {
     const int doc_id = 42;
     const string content = "cat in the city"s;
     const int doc_id1 = 43;
@@ -559,7 +573,7 @@ void TestSearchServer() {
     RUN_TEST(TestMatchDocument);
     RUN_TEST(TestSortRelevancsDocument);
     RUN_TEST(TestAverRatingAddDoc);
-    RUN_TEST(TestPredicat);
+    RUN_TEST(TestPredicate);
     RUN_TEST(TestStatus);
     RUN_TEST(TestRelevancs);
 
