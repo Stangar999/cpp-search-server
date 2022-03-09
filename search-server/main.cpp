@@ -82,6 +82,60 @@ enum class DocumentStatus {
     REMOVED,
 };
 
+template <typename Iterator>
+class IteratorRange{
+public:
+    IteratorRange(Iterator begin, Iterator end):
+        begin_(begin),
+        end_(end)
+    {
+    }
+    Iterator begin() const {
+        return begin_;
+    }
+    Iterator end() const {
+        return end_;
+    }
+//    int size() const {
+//        return distance(begin_, end_);
+//    }
+private:
+    Iterator begin_;
+    Iterator end_;
+};
+
+template <typename Iterator>
+class Paginator {
+public:
+    Paginator(Iterator begin, Iterator end, int size) {
+        while(begin != end){
+            if(static_cast<int>(distance(begin, end)) >= size){
+                vecItR.push_back(IteratorRange(begin, next(begin, size)));
+                advance(begin, size);
+            }else{
+                vecItR.push_back(IteratorRange(begin, end));
+                begin = end;
+            }
+        }
+    }
+    auto begin() const {
+        return vecItR.begin();
+    }
+    auto end() const {
+        return vecItR.end();
+    }
+    int size() const {
+        return vecItR.end() - vecItR.begin();
+    }
+private:
+    vector<IteratorRange<Iterator>> vecItR;
+};
+
+template <typename Container>
+auto Paginate(const Container& c, size_t page_size) {
+    return Paginator(begin(c), end(c), page_size);
+}
+
 class SearchServer {
 public:
     inline static constexpr int INVALID_DOCUMENT_ID = -1;
@@ -347,6 +401,23 @@ ostream& operator<<(ostream& out, const map<T1,T2>& container) {
     out << ">"s;
     return out;
 }
+
+template <typename Iterator>
+ostream& operator<<(ostream& out, const IteratorRange<Iterator>& Itr) {
+    for (Iterator it = Itr.begin(); it != Itr.end(); ++it) {
+        cout << *it;
+    }
+    return out;
+}
+
+ostream& operator<<(ostream& out, const Document& document) {
+    out << "{ "s
+        << "document_id = "s << document.id << ", "s
+        << "relevance = "s << document.relevance << ", "s
+        << "rating = "s << document.rating << " }"s /*<< endl*/;
+    return out;
+}
+
 //----------------------------------------------------------------------------
 template <typename T, typename U>
 void AssertEqualImpl(const T& t, const U& u, const string& t_str, const string& u_str, const string& file,
@@ -666,21 +737,22 @@ void MatchDocuments(const SearchServer& search_server, const string& query) {
 }
 
 int main() {
-    TestSearchServer();
-    SearchServer search_server("и в на"s);
+    SearchServer search_server("and with"s);
 
-    AddDocument(search_server, 1, "пушистый кот пушистый хвост"s, DocumentStatus::ACTUAL, {7, 2, 7});
-    AddDocument(search_server, 1, "пушистый пёс и модный ошейник"s, DocumentStatus::ACTUAL, {1, 2});
-    AddDocument(search_server, -1, "пушистый пёс и модный ошейник"s, DocumentStatus::ACTUAL, {1, 2});
-    AddDocument(search_server, 3, "большой пёс скво\x12рец евгений"s, DocumentStatus::ACTUAL, {1, 3, 2});
-    AddDocument(search_server, 4, "большой пёс скворец евгений"s, DocumentStatus::ACTUAL, {1, 1, 1});
+    search_server.AddDocument(1, "funny pet and nasty rat"s, DocumentStatus::ACTUAL, {7, 2, 7});
+    search_server.AddDocument(2, "funny pet with curly hair"s, DocumentStatus::ACTUAL, {1, 2, 3});
+    search_server.AddDocument(3, "big cat nasty hair"s, DocumentStatus::ACTUAL, {1, 2, 8});
+    search_server.AddDocument(4, "big dog cat Vladislav"s, DocumentStatus::ACTUAL, {1, 3, 2});
+    search_server.AddDocument(5, "big dog hamster Borya"s, DocumentStatus::ACTUAL, {1, 1, 1});
 
-    FindTopDocuments(search_server, "пушистый -пёс"s);
-    FindTopDocuments(search_server, "пушистый --кот"s);
-    FindTopDocuments(search_server, "пушистый -"s);
+    const auto search_results = search_server.FindTopDocuments("curly dog"s);
+    int page_size = 2;
 
-    MatchDocuments(search_server, "пушистый пёс"s);
-    MatchDocuments(search_server, "модный -кот"s);
-    MatchDocuments(search_server, "модный --пёс"s);
-    MatchDocuments(search_server, "пушистый - хвост"s);
+    const auto pages = Paginate(search_results, page_size);
+
+    // Выводим найденные документы по страницам
+    for (auto page = pages.begin(); page != pages.end(); ++page) {
+        cout << *page << endl;
+        cout << "Page break"s << endl;
+    }
 }
