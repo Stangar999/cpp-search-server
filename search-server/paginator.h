@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <algorithm>
 //-------------------------------------------------------------------------------------------------------------
 template <typename Iterator>
 class IteratorRange{
@@ -25,15 +26,14 @@ private:
 template <typename Iterator>
 class Paginator {
 public:
-    Paginator(Iterator begin, Iterator end, int size) {
-        while(begin != end){
-            if(static_cast<int>(distance(begin, end)) >= size){
-                pages_.push_back(IteratorRange(begin, next(begin, size)));
-                advance(begin, size);
-            }else{
-                pages_.push_back(IteratorRange(begin, end));
-                begin = end;
-            }
+    Paginator(Iterator begin, Iterator end, size_t page_size) {
+        for (size_t left = distance(begin, end); left > 0;) {
+            const size_t current_page_size = std::min(page_size, left);
+            const Iterator current_page_end = next(begin, current_page_size);
+            pages_.push_back({begin, current_page_end});
+
+            left -= current_page_size;
+            begin = current_page_end;
         }
     }
     auto begin() const {
