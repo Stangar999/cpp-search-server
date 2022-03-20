@@ -37,6 +37,14 @@ std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_quer
     return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
 }
 //-------------------------------------------------------------------------------------------------------------
+int SearchServer::GetDocumentCount() const {
+    return documents_.size();
+}
+//-------------------------------------------------------------------------------------------------------------
+int SearchServer::GetDocumentId(int index) const {
+    return document_ids_.at(index);
+}
+//-------------------------------------------------------------------------------------------------------------
 std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(const std::string& raw_query, int document_id) const {
     Query query = ParseQuery(raw_query);
     vector<string> matched_words;

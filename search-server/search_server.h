@@ -36,13 +36,9 @@ public:
 
     std::vector<Document> FindTopDocuments(const std::string& raw_query) const;
 
-    int GetDocumentCount() const {
-        return documents_.size();
-    }
+    int GetDocumentCount() const;
 
-    int GetDocumentId(int index) const {
-        return document_ids_.at(index);
-    }
+    int GetDocumentId(int index) const;
 
     std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
 
