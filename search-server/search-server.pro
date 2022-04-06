@@ -1,0 +1,23 @@
+TEMPLATE = app
+CONFIG += console c++17
+CONFIG -= app_bundle
+CONFIG -= qt
+
+SOURCES += \
+        document.cpp \
+        main.cpp \
+        read_input_functions.cpp \
+        request_queue.cpp \
+        search_server.cpp \
+        string_processing.cpp \
+        tests.cpp
+
+HEADERS += \
+  document.h \
+  log_duration.h \
+  paginator.h \
+  read_input_functions.h \
+  request_queue.h \
+  search_server.h \
+  string_processing.h \
+  tests.h
