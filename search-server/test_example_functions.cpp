@@ -1,4 +1,7 @@
-#include "tests.h"
+#include <iterator>
+#include "test_example_functions.h"
+#include "remove_duplicates.h"
+#include "search_server.h"
 //-------------------------------------------------------------------------------------------------------------
 void AssertImpl(bool value, const std::string& expr_str, const std::string& file, const std::string& func, unsigned line,
                 const std::string& hint) {
@@ -60,7 +63,7 @@ void TestExcludeMinusWordsFromFindDocument() {
     }
 }
 //-------------------------------------------------------------------------------------------------------------
-void TestMatchDocument() {
+void TestMatchDocuments() {
     const int doc_id = 42;
     const std::string content = "cat in the city"s;
     const std::vector<int> ratings = {1, 2, 3};
@@ -73,11 +76,11 @@ void TestMatchDocument() {
     }
     // убеждаемся, что матчинг исключает доки с минус словами
     {
-        const auto& [vec, st] = server.MatchDocument("cat in the -city"s, doc_id);
+        const auto& [vec, _] = server.MatchDocument("cat in the -city"s, doc_id);
         ASSERT(vec.empty());
     }
     {
-        const auto& [vec, st] = server.MatchDocument("dog"s, doc_id);
+        const auto& [vec, _] = server.MatchDocument("dog"s, doc_id);
         ASSERT(vec.empty());
     }
 }
@@ -223,16 +226,94 @@ void TestRelevance() {
    }
 }
 //-------------------------------------------------------------------------------------------------------------
+void TestGetWordFrequencies() {
+   const int doc_id1 = 41;
+   const std::string content1 = "cat in the city"s;
+   const std::vector<int> ratings = {1, 2, 3};
+   {
+       SearchServer server("in the"s);
+       server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, ratings);
+       ASSERT(server.GetWordFrequencies(41).size() == 2);
+       ASSERT(server.GetWordFrequencies(41).at("cat"s) == 0.5);
+       ASSERT(server.GetWordFrequencies(41).at("city"s) == 0.5);
+       ASSERT(server.GetWordFrequencies(100).empty());
+   }
+}
+//-------------------------------------------------------------------------------------------------------------
+void TestBeginEnd() {
+    SearchServer search_server("and in at"s);
+
+    search_server.AddDocument(1, "curly cat curly tail"s, DocumentStatus::ACTUAL, {7, 2, 7});
+    search_server.AddDocument(2, "curly dog and fancy collar"s, DocumentStatus::ACTUAL, {1, 2, 3});
+    search_server.AddDocument(3, "big cat fancy collar "s, DocumentStatus::ACTUAL, {1, 2, 8});
+
+    ASSERT(*search_server.begin() == 1);
+    ASSERT(*next(search_server.begin()) == 2);
+    ASSERT(*next(search_server.end(),-1) == 3);
+}
+//-------------------------------------------------------------------------------------------------------------
+void TestRemoveDocument() {
+   const int doc_id1 = 41;
+   const std::string content1 = "cat in cat the city"s;
+   const int doc_id2 = 42;
+   const std::string content2 = "dog in the city"s;
+   const int doc_id3 = 43;
+   const std::string content3 = "cat out of country"s;
+   const std::vector<int> ratings = {1, 2, 3};
+   {
+       SearchServer server("in the of out"s);
+       server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, ratings);
+       server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, ratings);
+       server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, ratings);
+       server.RemoveDocument(42);
+       const auto found_docs = server.FindTopDocuments("cat in the city"s);
+       ASSERT(found_docs.size() == 2);
+       ASSERT(*server.begin() == 41);
+       ASSERT(*next(server.end(),-1) == 43);
+       ASSERT(server.GetDocumentCount() == 2);
+   }
+}
+//-------------------------------------------------------------------------------------------------------------
+void TestRemoveDuplicat() {
+   const int doc_id1 = 41;
+   const std::string content1 = "cat in cat the city"s;
+   const int doc_id2 = 42;
+   const std::string content2 = "dog in the city"s;
+   const int doc_id3 = 43;
+   const std::string content3 = "cat out of country"s;
+   const int doc_id4 = 44;
+   const std::string content4 = "cat out of country"s;
+   const int doc_id5 = 45;
+   const std::string content5 = "cat out of country"s;
+   const std::vector<int> ratings = {1, 2, 3};
+   {
+       SearchServer server("in the of out"s);
+       server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, ratings);
+       server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, ratings);
+       server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, ratings);
+       server.AddDocument(doc_id4, content4, DocumentStatus::ACTUAL, ratings);
+       server.AddDocument(doc_id5, content4, DocumentStatus::ACTUAL, ratings);
+
+       ASSERT(server.GetDocumentCount() == 5);
+       RemoveDuplicates(server);
+       ASSERT(server.GetDocumentCount() == 3);
+   }
+}
+//-------------------------------------------------------------------------------------------------------------
 void TestSearchServer() {
     RUN_TEST(TestAddedDocumentContent);
     RUN_TEST(TestExcludeStopWordsFromAddedDocumentContent);
     RUN_TEST(TestExcludeMinusWordsFromFindDocument);
-    RUN_TEST(TestMatchDocument);
+    RUN_TEST(TestMatchDocuments);
     RUN_TEST(TestSortRelevancsDocument);
     RUN_TEST(TestAverRatingAddDoc);
     RUN_TEST(TestPredicate);
     RUN_TEST(TestStatus);
     RUN_TEST(TestRelevance);
+    RUN_TEST(TestGetWordFrequencies);
+    RUN_TEST(TestBeginEnd);
+    RUN_TEST(TestRemoveDocument);
+    RUN_TEST(TestRemoveDuplicat);
 }
 //-------------------------------------------------------------------------------------------------------------
 

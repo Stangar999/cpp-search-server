@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-#include "search_server.h"
-
 //----------------------------------------------------------------------------
 using namespace std::string_literals;
 
@@ -50,7 +48,7 @@ void TestExcludeStopWordsFromAddedDocumentContent();
 // Тест проверяет, что поисковая система исключает документы с минус словами
 void TestExcludeMinusWordsFromFindDocument();
 // Тест проверяет, поисковая систему на матчинг
-void TestMatchDocument();
+void TestMatchDocuments(); // TODO в тест системе видимо тоже имя тест с TestMatchDocument, возникает ошибка (error: cannot convert ‘<unresolved overloaded function type>’ to ‘std::function<void()>&&’) не справедливо почему я менять должен
 // Тест проверяет что результат отсортирован по релевантности
 void TestSortRelevancsDocument();
 // Тест проверяет, среднее аримфмет рейтинга
@@ -61,6 +59,14 @@ void TestPredicate();
 void TestStatus();
 // Тест проверяет, релевантность
 void TestRelevance();
+// Тест проверяет, GetWordFrequencies
+void TestGetWordFrequencies();
+// Тест проверяет, методы BeginEnd
+void TestBeginEnd();
+// Тест проверяет, метод RemoveDocument
+void TestRemoveDocument();
+// Тест проверяет, RemoveDuplicates
+void TestRemoveDuplicat(); // TODO в тест системе видимо тоже имя тест с TestRemoveDuplicates, возникает ошибка (error: cannot convert ‘<unresolved overloaded function type>’ to ‘std::function<void()>&&’) не справедливо почему я менять должен
 // запуск тестов
 void TestSearchServer();
 //-------------------------------------------------------------------------------------------------------------

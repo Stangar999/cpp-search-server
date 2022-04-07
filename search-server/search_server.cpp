@@ -21,9 +21,10 @@ void SearchServer::AddDocument(int document_id, const std::string& document, Doc
     const double inv_word_count = 1.0 / words.size();
     for (const string& word : words) {
         word_to_document_freqs_[word][document_id] += inv_word_count;
+        documents_words_freqs_[document_id][word] += inv_word_count;
     }
     documents_.emplace(document_id, DocumentData{ComputeAverageRating(ratings), status});
-    document_ids_.push_back(document_id);
+    document_ids_.insert(document_id);
 }
 //-------------------------------------------------------------------------------------------------------------
 std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query, DocumentStatus status) const {
@@ -38,11 +39,15 @@ std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_quer
 }
 //-------------------------------------------------------------------------------------------------------------
 int SearchServer::GetDocumentCount() const {
-    return documents_.size();
+    return static_cast<int>(documents_.size());
 }
 //-------------------------------------------------------------------------------------------------------------
-int SearchServer::GetDocumentId(int index) const {
-    return document_ids_.at(index);
+std::set<int>::const_iterator SearchServer::begin() const {
+    return document_ids_.cbegin();
+}
+//-------------------------------------------------------------------------------------------------------------
+std::set<int>::const_iterator SearchServer::end() const {
+    return document_ids_.cend();
 }
 //-------------------------------------------------------------------------------------------------------------
 std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(const std::string& raw_query, int document_id) const {
@@ -69,10 +74,31 @@ std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument
     return {matched_words, documents_.at(document_id).status};
 }
 //-------------------------------------------------------------------------------------------------------------
+const std::map<string, double> &SearchServer::GetWordFrequencies(int document_id) const
+{
+    if(!documents_words_freqs_.count(document_id)){ //документа с таким id нет
+        return empty; // TODO Здравствуйте, ничего лучше не придумал, как нормально вернуть ссылку на пустой контейнер ???
+    }
+    return documents_words_freqs_.at(document_id);
+}
+//-------------------------------------------------------------------------------------------------------------
+void SearchServer::RemoveDocument(int document_id)
+{
+    if(!document_ids_.count(document_id)){
+        return;
+    }
+    for(const auto& [word, _] : documents_words_freqs_.at(document_id)){
+        word_to_document_freqs_.at(word).erase(document_id);
+    }
+    documents_words_freqs_.erase(document_id);
+    documents_.erase(document_id);
+    document_ids_.erase(document_id);
+}
+//-------------------------------------------------------------------------------------------------------------
 bool SearchServer::IsStopWord(const std::string& word) const {
     return stop_words_.count(word) > 0;
 }
-
+//-------------------------------------------------------------------------------------------------------------
 bool SearchServer::IsValidWord(const std::string& word) {
     return none_of(word.begin(), word.end(), [](char c) {
         return c >= '\0' && c < ' ';

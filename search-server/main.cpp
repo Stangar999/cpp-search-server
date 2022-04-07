@@ -5,18 +5,18 @@
 #include "request_queue.h"
 #include "paginator.h"
 #include "read_input_functions.h"
-#include "tests.h"
+#include "test_example_functions.h"
 #include "log_duration.h"
 
 using namespace std;
-//void AddDocument(SearchServer& search_server, int document_id, const string& document, DocumentStatus status,
-//                 const vector<int>& ratings) {
-//    try {
-//        search_server.AddDocument(document_id, document, status, ratings);
-//    } catch (const exception& e) {
-//        cout << "?????? ?????????? ????????? "s << document_id << ": "s << e.what() << endl;
-//    }
-//}
+void AddDocument(SearchServer& search_server, int document_id, const string& document, DocumentStatus status,
+                 const vector<int>& ratings) {
+    try {
+        search_server.AddDocument(document_id, document, status, ratings);
+    } catch (const exception& e) {
+        cout << "AddDocument FAIL "s << document_id << ": "s << e.what() << endl;
+    }
+}
 
 void FindTopDocuments(const SearchServer& search_server, const string& raw_query) {
     try {
@@ -34,9 +34,7 @@ void MatchDocuments(const SearchServer& search_server, const string& query) {
     try {
         LOG_DURATION_STREAM("Operation time", cout);
         cout << "MatchDocuments query: "s << query << endl;
-        const int document_count = search_server.GetDocumentCount();
-        for (int index = 0; index < document_count; ++index) {
-            const int document_id = search_server.GetDocumentId(index);
+        for (int document_id : search_server) {
             const auto [words, status] = search_server.MatchDocument(query, document_id);
             PrintMatchDocumentResult(document_id, words, status);
         }
