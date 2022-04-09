@@ -77,7 +77,8 @@ std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument
 const std::map<string, double> &SearchServer::GetWordFrequencies(int document_id) const
 {
     if(!documents_words_freqs_.count(document_id)){ //документа с таким id нет
-        return empty; // TODO Здравствуйте, ничего лучше не придумал, как нормально вернуть ссылку на пустой контейнер ???
+        static std::map<std::string, double> empty;
+        return empty;
     }
     return documents_words_freqs_.at(document_id);
 }
