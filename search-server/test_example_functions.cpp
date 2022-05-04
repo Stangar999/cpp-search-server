@@ -1,6 +1,6 @@
 #include <iterator>
 #include "test_example_functions.h"
-#include "remove_duplicates.h"
+//#include "remove_duplicates.h"
 #include "search_server.h"
 //-------------------------------------------------------------------------------------------------------------
 void AssertImpl(bool value, const std::string& expr_str, const std::string& file, const std::string& func, unsigned line,
@@ -295,7 +295,7 @@ void TestRemoveDuplicat() {
        server.AddDocument(doc_id5, content4, DocumentStatus::ACTUAL, ratings);
 
        ASSERT(server.GetDocumentCount() == 5);
-       RemoveDuplicates(server);
+//       RemoveDuplicates(server);
        ASSERT(server.GetDocumentCount() == 3);
    }
 }
