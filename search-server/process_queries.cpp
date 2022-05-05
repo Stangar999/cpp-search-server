@@ -28,6 +28,14 @@ list<Document> ProcessQueriesJoined(const SearchServer& search_server, const vec
         }
         return result;
 }
+
+//vector<Document> result;
+////result.reserve(am_size.back());
+//for(const vector<Document>& vec : tmp){
+//    for(const Document& doc : vec){
+//        result.push_back(doc);
+//    }
+//}
 //    reduce(execution::par,
 //           tmp.begin(), tmp.end(),
 //           result,

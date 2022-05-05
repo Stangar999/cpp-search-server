@@ -1,4 +1,4 @@
-#include <cmath>
+﻿#include <cmath>
 #include <numeric>
 
 #include "search_server.h"
@@ -95,6 +95,74 @@ void SearchServer::RemoveDocument(int document_id)
     documents_.erase(document_id);
     document_ids_.erase(document_id);
 }
+//-------------------------------------------------------------------------------------------------------------
+//void SearchServer::RemoveDocument(execution::sequenced_policy, int document_id)
+//{
+//    if(!document_ids_.count(document_id)){
+//        return;
+//    }
+//    for(const auto& [word, _] : documents_words_freqs_.at(document_id)){
+//        word_to_document_freqs_.at(word).erase(document_id);
+//    }
+//    documents_words_freqs_.erase(document_id);
+//    documents_.erase(document_id);
+//    document_ids_.erase(document_id);
+//}
+////-------------------------------------------------------------------------------------------------------------
+//void SearchServer::RemoveDocument(execution::parallel_policy, int document_id){
+//    if(!document_ids_.count(document_id)){
+//        return;
+//    }
+//    std::vector<std::string> words_to_delete;
+//    words_to_delete.reserve(10000);
+//    for(const auto& [word, _]: documents_words_freqs_[document_id]) {
+//        words_to_delete.push_back(word);
+//    }
+
+//    std::vector<bool> tmp;
+//    tmp.reserve(10000);
+
+//    transform(execution::par,
+//              words_to_delete.begin(), words_to_delete.end(),
+//              tmp.begin(),
+//              [this, document_id] (const std::string& word) {
+//        word_to_document_freqs_[word].erase(document_id);
+//        return true;
+//    });
+
+////    std::vector<std::string> words_to_delete;
+////    words_to_delete.reserve(100000);
+////    for(const auto& [word, _]: documents_words_freqs_[document_id]) {
+////        words_to_delete.push_back(word);
+////    }
+
+////    std::vector<bool> tmp(100000);
+
+////    transform(execution_type,
+////              words_to_delete.begin(), words_to_delete.end(),
+////              tmp.begin(),
+////              [this, document_id] (const std::string& word) {
+////        word_to_document_freqs_[word].erase(document_id);
+////        return true;
+////    });
+
+////    std::vector<bool> tmp(100000);
+////    std::transform(execution_type,
+////                   documents_words_freqs_.at(document_id).begin(),
+////                   documents_words_freqs_.at(document_id).end(),
+////                   tmp.begin(),
+////                   [this, document_id](const std::pair<std::string, double>& par){
+////            word_to_document_freqs_[par.first].erase(document_id);
+////            return true;
+////    });
+
+////    for(const auto& [word, _] : documents_words_freqs_.at(document_id)){
+////        word_to_document_freqs_.at(word).erase(document_id);
+////    }
+//    documents_words_freqs_.erase(document_id);
+//    documents_.erase(document_id);
+//    document_ids_.erase(document_id);
+//}
 //-------------------------------------------------------------------------------------------------------------
 bool SearchServer::IsStopWord(const std::string& word) const {
     return stop_words_.count(word) > 0;

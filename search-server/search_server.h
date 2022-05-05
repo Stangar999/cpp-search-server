@@ -1,13 +1,15 @@
-#pragma once
+﻿#pragma once
 
 #include <string>
 #include <stdexcept>
 #include <vector>
+#include <list>
 #include <map>
 #include <set>
 #include <utility>
 #include <algorithm>
 #include <optional>
+#include <execution>
 
 #include "document.h"
 #include "string_processing.h"
@@ -47,6 +49,13 @@ public:
     const std::map<std::string, double>& GetWordFrequencies(int document_id) const;
 
     void RemoveDocument(int document_id);
+
+//    void RemoveDocument(std::execution::parallel_policy, int document_id);
+
+//    void RemoveDocument(std::execution::sequenced_policy, int document_id);
+
+    template <typename Execution>
+    void RemoveDocument(Execution execut, int document_id);
 
 private:
     struct DocumentData {
@@ -147,3 +156,54 @@ std::vector<Document> SearchServer::FindAllDocuments(const Query& query, Documen
     return matched_documents;
 }
 //-------------------------------------------------------------------------------------------------------------
+template <typename Execution>
+void SearchServer::RemoveDocument(Execution execut, int document_id){
+    if(!document_ids_.count(document_id)){
+        return;
+    }
+
+    std::vector<std::string> words_to_delete;
+    words_to_delete.reserve(1000000);
+    for(const auto& [word, _]: documents_words_freqs_[document_id]) {
+        words_to_delete.push_back(word);
+    }
+
+    std::vector<bool> tmp(100000);
+
+    transform(execut,
+              words_to_delete.begin(), words_to_delete.end(),
+              tmp.begin(),
+              [this, document_id] (const std::string& word) {
+        word_to_document_freqs_[word].erase(document_id);
+        return true;
+    });
+
+    documents_words_freqs_.erase(document_id);
+    documents_.erase(document_id);
+    document_ids_.erase(document_id);
+}
+
+//    if(!document_ids_.count(document_id)){
+//        return;
+//    }
+//    std::vector<std::string> words_to_delete;
+//    words_to_delete.reserve(100000);
+//    for(const auto& [word, _]: documents_words_freqs_[document_id]) {
+//        words_to_delete.push_back(word);
+//    }
+
+//    std::vector<bool> tmp(100000);
+//    //tmp.reserve(100000);
+
+//    transform(execut,
+//              words_to_delete.begin(), words_to_delete.end(),
+//              tmp.begin(),
+//              [this, document_id] (const std::string& word) {
+//        word_to_document_freqs_[word].erase(document_id);
+//        return true;
+//    });
+
+//    documents_words_freqs_.erase(document_id);
+//    documents_.erase(document_id);
+//    document_ids_.erase(document_id);
+//}
