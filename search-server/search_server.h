@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <optional>
 #include <execution>
+#include <cassert>
 
 #include "document.h"
 #include "string_processing.h"
@@ -156,32 +157,66 @@ std::vector<Document> SearchServer::FindAllDocuments(const Query& query, Documen
     return matched_documents;
 }
 //-------------------------------------------------------------------------------------------------------------
-template <typename Execution>
-void SearchServer::RemoveDocument(Execution execut, int document_id){
-    if(!document_ids_.count(document_id)){
-        return;
-    }
+//template <typename Execution>
+//void SearchServer::RemoveDocument(Execution execut, int document_id){
+//    if(!document_ids_.count(document_id)){
+//        return;
+//    }
 
-    std::vector<std::string> words_to_delete;
-    words_to_delete.reserve(1000000);
-    for(const auto& [word, _]: documents_words_freqs_[document_id]) {
-        words_to_delete.push_back(word);
-    }
+//   std::vector<const std::string*> words_to_delete(documents_words_freqs_[document_id].size());
+////    for(const auto& [word, _]: documents_words_freqs_[document_id]) {
+////        words_to_delete.push_back(word);
+////    }
 
-    std::vector<bool> tmp(100000);
+//    transform(execut,
+//              documents_words_freqs_[document_id].begin(), documents_words_freqs_[document_id].end(),
+//              words_to_delete.begin(),
+//              [](const std::pair<std::string, double>& par){
+//                  std::cout << par.first << " ";
+//                  const std::string* ptr_str = &par.first;
+//                  std::cout << ptr_str. << " ";
 
-    transform(execut,
-              words_to_delete.begin(), words_to_delete.end(),
-              tmp.begin(),
-              [this, document_id] (const std::string& word) {
-        word_to_document_freqs_[word].erase(document_id);
-        return true;
-    });
+////                  std::string_view str_v = par.first;
+////                  std::cout << str_v << std::endl;
+////                  for(const auto& var : words_to_delete){
+////                      std::cout << var << std::endl;
+////                  }
+//                  return ptr_str;
+//              }
+//    );
 
-    documents_words_freqs_.erase(document_id);
-    documents_.erase(document_id);
-    document_ids_.erase(document_id);
-}
+////    for(const auto& var : words_to_delete){
+////        std::cout << var << std::endl;
+////    }
+
+//    std::for_each(execut,
+//                  words_to_delete.begin(), words_to_delete.end(),
+//                  [this, document_id](const std::string* str_v){
+//        //std::cout << str_v << std::endl;
+//        word_to_document_freqs_[*str_v].erase(document_id);
+//    });
+
+//    documents_words_freqs_.erase(document_id);
+//    documents_.erase(document_id);
+//    document_ids_.erase(document_id);
+//}
+
+//    for(const auto& [word, _]: documents_words_freqs_[document_id]) {
+//        words_to_delete.push_back(word);
+//    }
+
+//    std::vector<bool> tmp(documents_words_freqs_[document_id].size());
+
+//    transform(execut,
+//              words_to_delete.begin(), words_to_delete.end(),
+//              tmp.begin(),
+//              [this, document_id] (const std::string& word) {
+//        word_to_document_freqs_[word].erase(document_id);
+//        return true;
+//    });
+
+
+//}
 
 //    if(!document_ids_.count(document_id)){
 //        return;
@@ -207,3 +242,55 @@ void SearchServer::RemoveDocument(Execution execut, int document_id){
 //    documents_.erase(document_id);
 //    document_ids_.erase(document_id);
 //}
+
+//template <typename Execution>
+//void SearchServer::RemoveDocument(Execution execut, int document_id){
+//    if(!document_ids_.count(document_id)){
+//        return;
+//    }
+
+//    std::vector<std::string> words_to_delete;
+//    words_to_delete.reserve(documents_words_freqs_[document_id].size());
+//    for(const auto& [word, _]: documents_words_freqs_[document_id]) {
+//        words_to_delete.push_back(word);
+//    }
+
+//    std::vector<bool> tmp(documents_words_freqs_[document_id].size());
+
+//    transform(execut,
+//              words_to_delete.begin(), words_to_delete.end(),
+//              tmp.begin(),
+//              [this, document_id] (const std::string& word) {
+//        word_to_document_freqs_[word].erase(document_id);
+//        return true;
+//    });
+
+//    documents_words_freqs_.erase(document_id);
+//    documents_.erase(document_id);
+//    document_ids_.erase(document_id);
+//}
+// ----------------------------------------WORK-------------------------------------------------
+template <typename Execution>
+void SearchServer::RemoveDocument(Execution execut, int document_id){
+    if(!document_ids_.count(document_id)){
+        return;
+    }
+
+    std::vector<std::string_view> words_to_delete(documents_words_freqs_[document_id].size());
+    for(const auto& [word, _]: documents_words_freqs_[document_id]) {
+        words_to_delete.push_back(word);
+    }
+
+    std::for_each(execut,
+                  words_to_delete.begin(), words_to_delete.end(),
+                  [this, document_id](std::string_view str_v){
+        word_to_document_freqs_[std::string{str_v}].erase(document_id);
+    });
+
+    documents_words_freqs_.erase(document_id);
+    documents_.erase(document_id);
+    document_ids_.erase(document_id);
+}
+// ----------------------------------------------------------------------------------------
+
+//я думал так: строка это массив char, переменная типа string хранит указатель на первый элемент массива, а если создать указатель на стоку то при его разыменовании я смогу получить только первый символ строки и так как размер я не знаю то целостность не получиться восстановить ну или идти по символам пока не встретишь символ конца строки
