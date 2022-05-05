@@ -93,7 +93,7 @@ SearchServer::SearchServer(const StringContainer& stop_words)
     : stop_words_(MakeUniqueNonEmptyStrings(stop_words)) {
     for(const auto& str : stop_words_){
         if(!IsValidWord(str)){
-            throw std::invalid_argument("есть символы с кодами от 0 до 31"s);
+            throw std::invalid_argument("РµСЃС‚СЊ СЃРёРјРІРѕР»С‹ СЃ РєРѕРґР°РјРё РѕС‚ 0 РґРѕ 31"s);
         }
     }
 }

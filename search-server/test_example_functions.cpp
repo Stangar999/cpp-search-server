@@ -68,13 +68,13 @@ void TestMatchDocuments() {
     const std::string content = "cat in the city"s;
     const std::vector<int> ratings = {1, 2, 3};
     SearchServer server(""s);
-    // убеждаемся, что матчинг находит все слова
+    // СѓР±РµР¶РґР°РµРјСЃСЏ, С‡С‚Рѕ РјР°С‚С‡РёРЅРі РЅР°С…РѕРґРёС‚ РІСЃРµ СЃР»РѕРІР°
     {
         server.AddDocument(doc_id, content, DocumentStatus::BANNED, ratings);
         const auto& [vec, st] = server.MatchDocument(content, doc_id);
         ASSERT(vec.size() == 4 && st == DocumentStatus::BANNED);
     }
-    // убеждаемся, что матчинг исключает доки с минус словами
+    // СѓР±РµР¶РґР°РµРјСЃСЏ, С‡С‚Рѕ РјР°С‚С‡РёРЅРі РёСЃРєР»СЋС‡Р°РµС‚ РґРѕРєРё СЃ РјРёРЅСѓСЃ СЃР»РѕРІР°РјРё
     {
         const auto& [vec, _] = server.MatchDocument("cat in the -city"s, doc_id);
         ASSERT(vec.empty());
@@ -111,21 +111,21 @@ void TestAverRatingAddDoc() {
     const std::vector<int> ratings1 = {1, 2, 3};
     const std::vector<int> ratings2 = {1, -2, 3};
     const std::vector<int> ratings3 = {-1, -2, -3};
-    // убеждаемся, что документ добавляется с среднее аримфмет рейтинга
+    // СѓР±РµР¶РґР°РµРјСЃСЏ, С‡С‚Рѕ РґРѕРєСѓРјРµРЅС‚ РґРѕР±Р°РІР»СЏРµС‚СЃСЏ СЃ СЃСЂРµРґРЅРµРµ Р°СЂРёРјС„РјРµС‚ СЂРµР№С‚РёРЅРіР°
     {
         SearchServer server(""s);
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings1);
         const auto& found_docs = server.FindTopDocuments(content);
         ASSERT_EQUAL(found_docs.back().rating, 2 );
     }
-    // убеждаемся, что документ добавляется с среднее аримфмет рейтинга
+    // СѓР±РµР¶РґР°РµРјСЃСЏ, С‡С‚Рѕ РґРѕРєСѓРјРµРЅС‚ РґРѕР±Р°РІР»СЏРµС‚СЃСЏ СЃ СЃСЂРµРґРЅРµРµ Р°СЂРёРјС„РјРµС‚ СЂРµР№С‚РёРЅРіР°
     {
         SearchServer server(""s);
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings2);
         const auto& found_docs = server.FindTopDocuments(content);
         ASSERT_EQUAL(found_docs.back().rating, static_cast<int>(0.667) );
     }
-    // убеждаемся, что документ добавляется с среднее аримфмет рейтинга
+    // СѓР±РµР¶РґР°РµРјСЃСЏ, С‡С‚Рѕ РґРѕРєСѓРјРµРЅС‚ РґРѕР±Р°РІР»СЏРµС‚СЃСЏ СЃ СЃСЂРµРґРЅРµРµ Р°СЂРёРјС„РјРµС‚ СЂРµР№С‚РёРЅРіР°
     {
         SearchServer server(""s);
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings3);

@@ -15,8 +15,8 @@
 
 class LogDuration {
 public:
-    // заменим имя типа std::chrono::steady_clock
-    // с помощью using для удобства
+    // Р·Р°РјРµРЅРёРј РёРјСЏ С‚РёРїР° std::chrono::steady_clock
+    // СЃ РїРѕРјРѕС‰СЊСЋ using РґР»СЏ СѓРґРѕР±СЃС‚РІР°
     using Clock = std::chrono::steady_clock;
 
     LogDuration(const std::string& id, std::ostream& stream = std::cerr)

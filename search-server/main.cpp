@@ -46,6 +46,34 @@ void MatchDocuments(const SearchServer& search_server, const string& query) {
 }
 //-------------------------------------------------------------------------------------------------------------
 
+//int main() {
+//    SearchServer search_server("and with"s);
+
+//    int id = 0;
+//    for (
+//         const string& text : {
+//         "funny pet and nasty rat"s,
+//         "funny pet with curly hair"s,
+//         "funny pet and not very nasty rat"s,
+//         "pet with rat and rat and rat"s,
+//         "nasty rat with curly hair"s,
+//         }
+//    ) {
+//        search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, {1, 2});
+//    }
+
+//    const vector<string> queries = {
+//        "nasty rat -not"s,
+//        "not very funny nasty pet"s,
+//        "curly hair"s
+//    };
+//    for (const Document& document : ProcessQueriesJoined(search_server, queries)) {
+//        cout << "Document "s << document.id << " matched with relevance "s << document.relevance << endl;
+//    }
+
+//    return 0;
+//}
+
 string GenerateWord(mt19937& generator, int max_length) {
     const int length = uniform_int_distribution(1, max_length)(generator);
     string word;
@@ -107,7 +135,7 @@ int main() {
     }
 
     const auto queries = GenerateQueries(generator, dictionary, 2'000, 7);
-    TEST(ProcessQueries);
+    TEST(ProcessQueriesJoined);
 }
 
 //int main() {
@@ -155,15 +183,15 @@ int main() {
 //    search_server.AddDocument(4, "big dog sparrow Eugene"s, DocumentStatus::ACTUAL, {1, 3, 2});
 //    search_server.AddDocument(5, "big dog sparrow Vasiliy"s, DocumentStatus::ACTUAL, {1, 1, 1});
 
-//    // 1439 çàïðîñîâ ñ íóëåâûì ðåçóëüòàòîì
+//    // 1439 Ð·Ð°Ð¿Ñ€Ð¾ÑÐ¾Ð² Ñ Ð½ÑƒÐ»ÐµÐ²Ñ‹Ð¼ Ñ€ÐµÐ·ÑƒÐ»ÑŒÑ‚Ð°Ñ‚Ð¾Ð¼
 //    for (int i = 0; i < 1439; ++i) {
 //        request_queue.AddFindRequest("empty request"s);
 //    }
-//    // âñå åùå 1439 çàïðîñîâ ñ íóëåâûì ðåçóëüòàòîì
+//    // Ð²ÑÐµ ÐµÑ‰Ðµ 1439 Ð·Ð°Ð¿Ñ€Ð¾ÑÐ¾Ð² Ñ Ð½ÑƒÐ»ÐµÐ²Ñ‹Ð¼ Ñ€ÐµÐ·ÑƒÐ»ÑŒÑ‚Ð°Ñ‚Ð¾Ð¼
 //    request_queue.AddFindRequest("curly dog"s);
-//    // íîâûå ñóòêè, ïåðâûé çàïðîñ óäàëåí, 1438 çàïðîñîâ ñ íóëåâûì ðåçóëüòàòîì
+//    // Ð½Ð¾Ð²Ñ‹Ðµ ÑÑƒÑ‚ÐºÐ¸, Ð¿ÐµÑ€Ð²Ñ‹Ð¹ Ð·Ð°Ð¿Ñ€Ð¾Ñ ÑƒÐ´Ð°Ð»ÐµÐ½, 1438 Ð·Ð°Ð¿Ñ€Ð¾ÑÐ¾Ð² Ñ Ð½ÑƒÐ»ÐµÐ²Ñ‹Ð¼ Ñ€ÐµÐ·ÑƒÐ»ÑŒÑ‚Ð°Ñ‚Ð¾Ð¼
 //    request_queue.AddFindRequest("big collar"s);
-//    // ïåðâûé çàïðîñ óäàëåí, 1437 çàïðîñîâ ñ íóëåâûì ðåçóëüòàòîì
+//    // Ð¿ÐµÑ€Ð²Ñ‹Ð¹ Ð·Ð°Ð¿Ñ€Ð¾Ñ ÑƒÐ´Ð°Ð»ÐµÐ½, 1437 Ð·Ð°Ð¿Ñ€Ð¾ÑÐ¾Ð² Ñ Ð½ÑƒÐ»ÐµÐ²Ñ‹Ð¼ Ñ€ÐµÐ·ÑƒÐ»ÑŒÑ‚Ð°Ñ‚Ð¾Ð¼
 //    request_queue.AddFindRequest("sparrow"s);
 //    std::cout << "Total empty requests: "s << request_queue.GetNoResultRequests() << std::endl;
 
