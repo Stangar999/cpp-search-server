@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <chrono>
 #include <iostream>
@@ -20,6 +20,11 @@ public:
     using Clock = std::chrono::steady_clock;
 
     LogDuration(const std::string& id, std::ostream& stream = std::cerr)
+        : id_(id)
+        , stream_(stream){
+    }
+
+    LogDuration(const std::string_view id, std::ostream& stream = std::cerr)
         : id_(id)
         , stream_(stream){
     }

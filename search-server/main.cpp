@@ -23,7 +23,7 @@ void AddDocument(SearchServer& search_server, int document_id, const string& doc
 
 void FindTopDocuments(const SearchServer& search_server, const string& raw_query) {
     try {
-        LOG_DURATION_STREAM("Operation time", cout);
+        LOG_DURATION_STREAM("Operation time"s, cout);
         cout << "FindTopDocuments query: "s << raw_query << endl;
         for (const Document& document : search_server.FindTopDocuments(raw_query)) {
             PrintDocument(document);
@@ -35,7 +35,7 @@ void FindTopDocuments(const SearchServer& search_server, const string& raw_query
 
 void MatchDocuments(const SearchServer& search_server, const string& query) {
     try {
-        LOG_DURATION_STREAM("Operation time", cout);
+        LOG_DURATION_STREAM("Operation time"s, cout);
         cout << "MatchDocuments query: "s << query << endl;
         for (int document_id : search_server) {
             const auto [words, status] = search_server.MatchDocument(query, document_id);
@@ -46,6 +46,90 @@ void MatchDocuments(const SearchServer& search_server, const string& query) {
     }
 }
 //-------------------------------------------------------------------------------------------------------------
+
+string GenerateWord(mt19937& generator, int max_length) {
+    const int length = uniform_int_distribution(1, max_length)(generator);
+    string word;
+    word.reserve(length);
+    for (int i = 0; i < length; ++i) {
+        word.push_back(uniform_int_distribution('a', 'z')(generator));
+    }
+    return word;
+}
+
+vector<string> GenerateDictionary(mt19937& generator, int word_count, int max_length) {
+    vector<string> words;
+    words.reserve(word_count);
+    for (int i = 0; i < word_count; ++i) {
+        words.push_back(GenerateWord(generator, max_length));
+    }
+    sort(words.begin(), words.end());
+    words.erase(unique(words.begin(), words.end()), words.end());
+    return words;
+}
+
+string GenerateQuery(mt19937& generator, const vector<string>& dictionary, int word_count, double minus_prob = 0) {
+    string query;
+    for (int i = 0; i < word_count; ++i) {
+        if (!query.empty()) {
+            query.push_back(' ');
+        }
+        if (uniform_real_distribution<>(0, 1)(generator) < minus_prob) {
+            query.push_back('-');
+        }
+        query += dictionary[uniform_int_distribution<int>(0, dictionary.size() - 1)(generator)];
+    }
+    return query;
+}
+
+vector<string> GenerateQueries(mt19937& generator, const vector<string>& dictionary, int query_count, int max_word_count) {
+    vector<string> queries;
+    queries.reserve(query_count);
+    for (int i = 0; i < query_count; ++i) {
+        queries.push_back(GenerateQuery(generator, dictionary, max_word_count));
+    }
+    return queries;
+}
+
+template <typename ExecutionPolicy>
+void Test(string_view mark, SearchServer search_server, const string& query, ExecutionPolicy&& policy) {
+    LOG_DURATION(mark);
+    const int document_count = search_server.GetDocumentCount();
+    int word_count = 0;
+    for (int id = 0; id < document_count; ++id) {
+        const auto [words, status] = search_server.MatchDocument(policy, query, id);
+        word_count += words.size();
+    }
+    cout << word_count << endl;
+}
+
+    #define TEST(policy) Test(#policy, search_server, query, execution::policy)
+
+int main() {
+    mt19937 generator;
+
+    const auto dictionary = GenerateDictionary(generator, 1000, 10);
+    const auto documents = GenerateQueries(generator, dictionary, 10'000, 70);
+
+    const string query = GenerateQuery(generator, dictionary, 500, 0.1);
+
+    SearchServer search_server(dictionary[0]);
+    for (size_t i = 0; i < documents.size(); ++i) {
+        search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, {1, 2, 3});
+    }
+//    {
+//        LOG_DURATION("stok"s);
+//        const int document_count = search_server.GetDocumentCount();
+//        int word_count = 0;
+//        for (int id = 0; id < document_count; ++id) {
+//            const auto [words, status] = search_server.MatchDocument(query, id);
+//                    word_count += words.size();
+//        }
+//                    cout << word_count << endl;
+//    }
+//    TEST(seq);
+    TEST(par);
+}
 //string GenerateWord(mt19937& generator, int max_length) {
 //    const int length = uniform_int_distribution(1, max_length)(generator);
 //    string word;
@@ -124,42 +208,42 @@ void MatchDocuments(const SearchServer& search_server, const string& query) {
 //    }
 //}
 
-int main() {
-    SearchServer search_server("and with"s);
+//int main() {
+//    SearchServer search_server("and with"s);
 
-    int id = 0;
-    for (
-         const string& text : {
-         "funny pet and nasty rat"s,
-         "funny pet with curly hair"s,
-         "funny pet and not very nasty rat"s,
-         "pet with rat and rat and rat"s,
-         "nasty rat with curly hair"s,
-}
-         ) {
-        search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, {1, 2});
-    }
+//    int id = 0;
+//    for (
+//         const string& text : {
+//         "funny pet and nasty rat"s,
+//         "funny pet with curly hair"s,
+//         "funny pet and not very nasty rat"s,
+//         "pet with rat and rat and rat"s,
+//         "nasty rat with curly hair"s,
+//}
+//         ) {
+//        search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, {1, 2});
+//    }
 
-    const string query = "curly and funny"s;
+//    const string query = "curly and funny"s;
 
-    auto report = [&search_server, &query] {
-        cout << search_server.GetDocumentCount() << " documents total, "s
-             << search_server.FindTopDocuments(query).size() << " documents for query ["s << query << "]"s << endl;
-    };
+//    auto report = [&search_server, &query] {
+//        cout << search_server.GetDocumentCount() << " documents total, "s
+//             << search_server.FindTopDocuments(query).size() << " documents for query ["s << query << "]"s << endl;
+//    };
 
-    report();
-    // однопоточная версия
-    search_server.RemoveDocument(5);
-    report();
-    // однопоточная версия
-    search_server.RemoveDocument(execution::seq, 1);
-    report();
-    // многопоточная версия
-    search_server.RemoveDocument(execution::par, 2);
-    report();
+//    report();
+//    // однопоточная версия
+//    search_server.RemoveDocument(5);
+//    report();
+//    // однопоточная версия
+//    search_server.RemoveDocument(execution::seq, 1);
+//    report();
+//    // многопоточная версия
+//    search_server.RemoveDocument(execution::par, 2);
+//    report();
 
-    return 0;
-}
+//    return 0;
+//}
 
 //int main() {
 //    SearchServer search_server("and with"s);
