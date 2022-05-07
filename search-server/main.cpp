@@ -117,17 +117,7 @@ int main() {
     for (size_t i = 0; i < documents.size(); ++i) {
         search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, {1, 2, 3});
     }
-//    {
-//        LOG_DURATION("stok"s);
-//        const int document_count = search_server.GetDocumentCount();
-//        int word_count = 0;
-//        for (int id = 0; id < document_count; ++id) {
-//            const auto [words, status] = search_server.MatchDocument(query, id);
-//                    word_count += words.size();
-//        }
-//                    cout << word_count << endl;
-//    }
-//    TEST(seq);
+    TEST(seq);
     TEST(par);
 }
 //string GenerateWord(mt19937& generator, int max_length) {
