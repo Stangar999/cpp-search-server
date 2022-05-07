@@ -32,7 +32,7 @@ void FindTopDocuments(const SearchServer& search_server, const string& raw_query
         cout << "FindTopDocuments FAIL: "s << e.what() << endl;
     }
 }
-
+//-------------------------------------------------------------------------------------------------------------
 void MatchDocuments(const SearchServer& search_server, const string& query) {
     try {
         LOG_DURATION_STREAM("Operation time"s, cout);
@@ -113,10 +113,15 @@ int main() {
 
     const string query = GenerateQuery(generator, dictionary, 500, 0.1);
 
+//    TestSearchServer();
     SearchServer search_server(dictionary[0]);
-    for (size_t i = 0; i < documents.size(); ++i) {
-        search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, {1, 2, 3});
+    {
+        LOG_DURATION("add"s);
+        for (size_t i = 0; i < documents.size(); ++i) {
+            search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, {1, 2, 3});
+        }
     }
+
     TEST(seq);
     TEST(par);
 }

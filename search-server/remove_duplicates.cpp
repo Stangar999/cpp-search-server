@@ -1,13 +1,13 @@
-#include "remove_duplicates.h"
+﻿#include "remove_duplicates.h"
 #include <set>
 
 using namespace std;
 
 void RemoveDuplicates(SearchServer& search_server){
     vector<int> list_del;
-    set<set<string>> words_multiset;
+    set<set<string_view>> words_multiset;
     for(int id : search_server){
-        set<string> temp;
+        set<string_view> temp;
         for(const auto& [word, _] : search_server.GetWordFrequencies(id)){ // TODO как не получать warning unused variable _
             temp.insert(word);
         }
