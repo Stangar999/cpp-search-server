@@ -46,7 +46,6 @@ void MatchDocuments(const SearchServer& search_server, const string& query) {
     }
 }
 //-------------------------------------------------------------------------------------------------------------
-
 string GenerateWord(mt19937& generator, int max_length) {
     const int length = uniform_int_distribution(1, max_length)(generator);
     string word;
@@ -113,7 +112,7 @@ int main() {
 
     const string query = GenerateQuery(generator, dictionary, 500, 0.1);
 
-//    TestSearchServer();
+    TestSearchServer();
     SearchServer search_server(dictionary[0]);
     {
         LOG_DURATION("add"s);

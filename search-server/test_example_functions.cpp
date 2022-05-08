@@ -1,6 +1,7 @@
 ﻿#include <iterator>
+#include <execution>
 #include "test_example_functions.h"
-//#include "remove_duplicates.h"
+#include "remove_duplicates.h"
 #include "search_server.h"
 //-------------------------------------------------------------------------------------------------------------
 void AssertImpl(bool value, const std::string& expr_str, const std::string& file, const std::string& func, unsigned line,
@@ -295,9 +296,43 @@ void TestRemoveDuplicat() {
        server.AddDocument(doc_id5, content4, DocumentStatus::ACTUAL, ratings);
 
        ASSERT(server.GetDocumentCount() == 5);
-//       RemoveDuplicates(server);
+       RemoveDuplicates(server);
        ASSERT(server.GetDocumentCount() == 3);
    }
+}
+//-------------------------------------------------------------------------------------------------------------
+void TestRemoveParalel() {
+SearchServer search_server("and with"s);
+
+    int id = 0;
+    for (
+        const std::string& text : {
+            "funny pet and nasty rat"s,
+            "funny pet with curly hair"s,
+            "funny pet and not very nasty rat"s,
+            "pet with rat and rat and rat"s,
+            "nasty rat with curly hair"s,
+        }
+    ) {
+        search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, {1, 2});
+    }
+
+    const std::string query = "curly and funny"s;
+
+    ASSERT(search_server.GetDocumentCount() == 5);
+    ASSERT(search_server.FindTopDocuments(query).size() == 4);
+    // однопоточная версия
+    search_server.RemoveDocument(5);
+    ASSERT(search_server.GetDocumentCount() == 4);
+    ASSERT(search_server.FindTopDocuments(query).size() == 3);
+    // однопоточная версия
+    search_server.RemoveDocument(std::execution::seq, 1);
+    ASSERT(search_server.GetDocumentCount() == 3);
+    ASSERT(search_server.FindTopDocuments(query).size() == 2);
+    // многопоточная версия
+    search_server.RemoveDocument(std::execution::par, 2);
+    ASSERT(search_server.GetDocumentCount() == 2);
+    ASSERT(search_server.FindTopDocuments(query).size() == 1);
 }
 //-------------------------------------------------------------------------------------------------------------
 void TestSearchServer() {
@@ -314,6 +349,7 @@ void TestSearchServer() {
     RUN_TEST(TestBeginEnd);
     RUN_TEST(TestRemoveDocument);
     RUN_TEST(TestRemoveDuplicat);
+    RUN_TEST(TestRemoveParalel);
 }
 //-------------------------------------------------------------------------------------------------------------
 

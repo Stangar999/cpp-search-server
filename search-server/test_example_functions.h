@@ -67,6 +67,8 @@ void TestBeginEnd();
 void TestRemoveDocument();
 // Тест проверяет, RemoveDuplicates
 void TestRemoveDuplicat(); // TODO в тест системе видимо тоже имя тест с TestRemoveDuplicates, возникает ошибка (error: cannot convert ‘<unresolved overloaded function type>’ to ‘std::function<void()>&&’) не справедливо почему я менять должен
+// ест проверяет, RemoveDocument(std::execution::seq, 1);
+void TestRemoveParalel();
 // запуск тестов
 void TestSearchServer();
 //-------------------------------------------------------------------------------------------------------------
