@@ -15,6 +15,7 @@ SOURCES += \
     test_example_functions.cpp
 
 HEADERS += \
+  concurrent_map.h \
   document.h \
   log_duration.h \
   paginator.h \

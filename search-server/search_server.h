@@ -12,6 +12,7 @@
 #include <execution>
 #include <cassert>
 #include <functional>
+#include <type_traits>
 
 #include "document.h"
 #include "string_processing.h"
@@ -41,6 +42,15 @@ public:
     std::vector<Document> FindTopDocuments(const std::string_view raw_query, DocumentStatus status) const;
 
     std::vector<Document> FindTopDocuments(const std::string_view raw_query) const;
+
+    template <typename ExecutionPolicy, typename DocumentPredicate>
+    std::vector<Document> FindTopDocuments(ExecutionPolicy&& , const std::string_view raw_query, DocumentPredicate document_predicate) const;
+
+    template <typename ExecutionPolicy>
+    std::vector<Document> FindTopDocuments(ExecutionPolicy&& , const std::string_view raw_query, DocumentStatus status) const;
+
+    template <typename ExecutionPolicy>
+    std::vector<Document> FindTopDocuments(ExecutionPolicy&& , const std::string_view raw_query) const;
 
     int GetDocumentCount() const;
 
@@ -113,6 +123,36 @@ SearchServer::SearchServer(const StringContainer& stop_words)
         if(!IsValidWord(str)){
             throw std::invalid_argument("есть символы с кодами от 0 до 31"s);
         }
+    }
+}
+//-------------------------------------------------------------------------------------------------------------
+template <typename ExecutionPolicy, typename DocumentPredicate>
+std::vector<Document> SearchServer::FindTopDocuments(ExecutionPolicy&&, const std::string_view raw_query, DocumentPredicate document_predicate) const {
+    const bool is_excpolicy_par = std::is_same_v < std::decay_t < ExecutionPolicy >, std::execution::parallel_policy >;
+    if constexpr ( is_excpolicy_par ){
+        return FindTopDocuments(raw_query, document_predicate);;
+    } else {
+        return FindTopDocuments(raw_query, document_predicate);
+    }
+}
+//-------------------------------------------------------------------------------------------------------------
+template <typename ExecutionPolicy>
+std::vector<Document> SearchServer::FindTopDocuments(ExecutionPolicy&&, const std::string_view raw_query, DocumentStatus status) const {
+    const bool is_excpolicy_par = std::is_same_v < std::decay_t < ExecutionPolicy >, std::execution::parallel_policy >;
+    if constexpr ( is_excpolicy_par ){
+        return FindTopDocuments(raw_query, status);
+    } else {
+        return FindTopDocuments(raw_query, status);
+    }
+}
+//-------------------------------------------------------------------------------------------------------------
+template <typename ExecutionPolicy>
+std::vector<Document> SearchServer::FindTopDocuments(ExecutionPolicy&&, const std::string_view raw_query) const {
+    const bool is_excpolicy_par = std::is_same_v <std::decay_t <ExecutionPolicy>, std::execution::parallel_policy>;
+    if constexpr ( is_excpolicy_par ){
+        return FindTopDocuments(raw_query);
+    } else {
+        return FindTopDocuments(raw_query);
     }
 }
 //-------------------------------------------------------------------------------------------------------------
