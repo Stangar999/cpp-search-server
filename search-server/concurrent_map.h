@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include <map>
 #include <vector>
 #include <mutex>
@@ -10,7 +11,6 @@ public:
 
     struct Access {
         Value& ref_to_value;
-        //std::lock_guard<std::mutex> guard;
         std::mutex &m_;
         ~Access(){
             m_.unlock();
@@ -26,7 +26,6 @@ public:
     Access operator[](const Key& key){
         Key key_to_key = key % bucket_count_;
         vec_mut_[key_to_key].lock();
-        //std::cout << std::this_thread::get_id() << std::endl;
         return {vec_maps_[key_to_key][key], vec_mut_[key_to_key]};
     };
 
@@ -39,6 +38,12 @@ public:
         }
         return result;
     };
+
+    void erase(const Key& key){
+        Key key_to_key = key % bucket_count_;
+        std::lock_guard guard(vec_mut_[key_to_key]);
+        vec_maps_[key_to_key].erase(key);
+    }
 
 private:
     size_t bucket_count_;

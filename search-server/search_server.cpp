@@ -33,14 +33,11 @@ void SearchServer::AddDocument(int document_id, string_view document, DocumentSt
 }
 //-------------------------------------------------------------------------------------------------------------
 std::vector<Document> SearchServer::FindTopDocuments(const string_view raw_query, DocumentStatus status) const {
-    return FindTopDocuments(
-        raw_query,
-        [status](int, DocumentStatus document_status, int) {
-            return document_status == status;});
+    return FindTopDocuments(std::execution::seq, raw_query, status);
 }
 //-------------------------------------------------------------------------------------------------------------
 std::vector<Document> SearchServer::FindTopDocuments(const std::string_view raw_query) const {
-    return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
+    return FindTopDocuments(std::execution::seq, raw_query, DocumentStatus::ACTUAL);
 }
 //-------------------------------------------------------------------------------------------------------------
 int SearchServer::GetDocumentCount() const {
@@ -91,8 +88,8 @@ tuple<vector<string_view>, DocumentStatus> SearchServer::MatchDocument(execution
     bool is_was_minus = any_of( execution::par,
                                 query.minus_words.begin(), query.minus_words.end(),
                                 [this, document_id](const std::string_view& word){
-        if (word_to_document_freqs_.count(word) != 0) { // TODO можно ли в разных потоках читать так ?
-            if (word_to_document_freqs_.at(word).count(document_id)) { // TODO можно ли в разных потоках читать так ?
+        if (word_to_document_freqs_.count(word) != 0) {
+            if (word_to_document_freqs_.at(word).count(document_id)) {
                 return true;
             }
         }
@@ -103,7 +100,6 @@ tuple<vector<string_view>, DocumentStatus> SearchServer::MatchDocument(execution
         return {{}, documents_.at(document_id).status};
     }
     std::vector<std::string_view> matched_words(query.plus_words.size());
-
     std::vector<std::string_view>::iterator it_last_elem = std::copy_if(
                  execution::par,
                  query.plus_words.begin(), query.plus_words.end(),

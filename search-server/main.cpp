@@ -104,7 +104,7 @@ void Test(string_view mark, const SearchServer& search_server, const vector<stri
 #define TEST(policy) Test(#policy, search_server, queries, execution::policy)
 
 int main() {
-    TestSearchServer();
+    //TestSearchServer();
     mt19937 generator;
 
     const auto dictionary = GenerateDictionary(generator, 1000, 10);
